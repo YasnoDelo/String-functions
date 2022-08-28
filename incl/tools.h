@@ -15,6 +15,11 @@ char* kvazi_strncpy(char *in, const char *out, size_t end);
 
 char* kvazi_strcat (char *destination, const char *append);
 
-char* kvazi_strcat (char *begin, const char *added, size_t num);
+char* kvazi_strncat (char *begin, const char *added, size_t num);
+
+char* kvazi_strdup(char *pointer, size_t size_of_array);
+
+ssize_t kvazi_getline(char **lineptr, size_t *n, FILE *stream);
+
 
 #endif

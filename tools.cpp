@@ -1,36 +1,29 @@
 #include "incl/support.h"
 #include "incl/tools.h"
 
-int kvazi_puts(char *mass)
+int kvazi_puts(char *arr)
 {
-    check(mass != nullptr, EOF_error)
+    check(arr != nullptr, EOF_error)
 
-    char ch = ' ';
+    int ch = 0;
     size_t count = 0;
 
-    while ( ( ch = putchar(mass[count]) ) != '\0' && (ch != EOF))
-    {
-        count++;
-    }
+    while ( ( ch = putchar(arr[count++]) ) != '\0' && (ch != EOF));
     return (count == 0) ? EOF_error : no_error;
 }
 
-int kvazi_strchr(const char *mass, char findin)
+int kvazi_strchr(const char *arr, char findin)
 {
-    hard_check(mass != nullptr)
+    hard_check(arr != nullptr)
 
     int count = 0;
 
-    while (*(mass + count) != findin)
+    while (*(arr + count) != findin)
     {
-        if (*(mass + count) == '\0')
+        if (*(arr + count) == '\0')
         {
-            printf("\033[91mВ строке нет такого символа!\n\033[39m");
+            printf(RED("В строке нет такого символа!\n"));
             return 0;
-        }
-        else
-        {
-            ;
         }
 
         count++;
@@ -39,23 +32,11 @@ int kvazi_strchr(const char *mass, char findin)
     return ++count;
 }
 
-size_t kvazi_strlen(const char *mass)
+size_t kvazi_strlen(const char *arr)
 {
     size_t count = 0;
 
-    while (*(mass+count) != '\0')
-    {
-        count++;
-    }
-
-    return count;
-}
-
-size_t kvazi_strlen_for_notconst(char *mass)
-{
-    size_t count = 0;
-
-    while (*(mass+count) != '\0')
+    while (*(arr + count) != '\0')
     {
         count++;
     }
@@ -68,21 +49,16 @@ char* kvazi_strcpy(char *in, const char *out) //каждое применени�
     hard_check(out != nullptr)
     hard_check(in != nullptr)
 
-    int size = kvazi_strlen_for_notconst(in);
     int count = 0;
-
-    while (count < size)
-    {
-        *(in + count) = '\0';
-        count++;
-    }
-    count = 0;
 
     while (*(out + count) != '\0')
     {
         *(in + count) = *(out + count);
         count++;
     }
+
+    *(in + count) = '\0';
+
     return in;
 }
 
@@ -91,11 +67,14 @@ char* kvazi_strncpy(char *in, const char *out, size_t end)
     hard_check(out != nullptr)
     hard_check(in != nullptr)
 
-    int size = kvazi_strlen_for_notconst(in);
     size_t count = 0;
 
     while (count < end)
     {
+        if (*(out + count) == '\0') {
+            break;
+        }
+
         *(in + count) = *(out + count);
         count++;
     }
@@ -111,12 +90,9 @@ char* kvazi_strcat (char *begin, const char *added)
     hard_check(begin != nullptr)
     hard_check(added != nullptr)
 
-    size_t count = 0;
-
     // проверяем, сколько элементов в начальной строке
-    count = kvazi_strlen_for_notconst(begin);
-
-    size_t num = 0;
+    size_t count = kvazi_strlen(begin);
+    size_t num   = 0;
 
     //со следующего элемента можно начинать записывать
     do
@@ -130,14 +106,14 @@ char* kvazi_strcat (char *begin, const char *added)
     return begin;
 }
 
-char* kvazi_strcat (char *begin, const char *added, size_t end)
+char* kvazi_strncat (char *begin, const char *added, size_t end)
 {
     hard_check(begin != nullptr)
     hard_check(added != nullptr)
 
-    size_t count = kvazi_strlen_for_notconst(begin);
+    size_t count = kvazi_strlen(begin);
+    size_t num   = 0;
 
-    size_t num = 0;
 
     //со следующего элемента можно начинать записывать
     do
@@ -150,32 +126,78 @@ char* kvazi_strcat (char *begin, const char *added, size_t end)
     return begin;
 }
 
-char* kvazi_fgets(char *mass, size_t length_of_array, FILE *data_src)
+char* kvazi_fgets(char *arr, size_t length_of_array, FILE *data_src)
 {
-    hard_check(mass != nullptr)
+    hard_check(arr != nullptr)
     hard_check(data_src != nullptr)
 
-    char ch[1] = {};
+    int ch = 0;
     size_t count = 0;
 
     do
     {
-        fscanf(data_src, "%c", ch);
+        ch = getc(data_src);
 
-        *(mass + count) = *ch;
-
-
+        *(arr + count) = (char)ch;
         count++;
 
         if (count >= length_of_array)
         {
             printf("\033[91mОшибка. Считываемая строка длиннее максимального размера строки, которая была указана в аргументе функции kvazi_fgets\n\033[39m");
-            return mass;
+            return arr;
         }
-    } while ((*ch != '\n') && (*ch != EOF));
+    } while ((ch != '\n') && (ch != EOF));
 
-    return (count == 0) ? 0 : mass;
+    return (count == 0) ? 0 : arr;
 }
+
+char* kvazi_strdup(char *pointer, size_t size_of_array)
+{
+    hard_check(pointer != nullptr)
+
+    char *arr = (char*) calloc(size_of_array, sizeof(char));
+
+    size_t size = kvazi_strlen(pointer);
+    kvazi_strncpy(arr, pointer, size);
+
+    return arr;
+}
+
+ssize_t kvazi_getline(char **lineptr, size_t *n, FILE *stream)
+{
+    check(n != NULL, arg_function_is_nullptr);
+
+    int ch = 0;
+    size_t count = 0;
+
+    if (*lineptr == NULL) {
+        *lineptr = (char *)calloc(*n, sizeof (char));
+    }
+
+    do
+    {
+        ch = getc(stream);
+
+        (*lineptr)[count] = (char)ch;
+        count++;
+
+        if (count >= *n)
+        {
+            *n *= 2; //новый размер !!!!!!!!!!!!!!!!!!!!!!!!!!
+            *lineptr = (char *)realloc(*lineptr, *n);
+        }
+    } while ((ch != '\n') && (ch != EOF));
+
+    (*lineptr)[count] = '\0';
+    return 0;
+}
+
+
+
+
+
+
+
 
 
 

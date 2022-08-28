@@ -3,9 +3,11 @@
 
 int main()
 {
-    char file_name[100] = {};
-    char mass[100] = {};
-    size_t num = 100;
+    const size_t size_of_array = 100;
+
+    char file_name[size_of_array] = {};
+    char *arr = (char *)calloc(size_of_array, sizeof (char));
+    size_t num = size_of_array;
 
     FILE *file_pointer;
 
@@ -18,9 +20,14 @@ int main()
 
     file_pointer = fopen(file_name, "r"); // ругается на то, что аргументы должны быть константами
 
-    kvazi_fgets(mass, num, file_pointer);
+    kvazi_getline(&arr, &num, file_pointer);
 
-    printf("Вот что было в файле: %s", mass);
+    printf("%s", arr);
+
+    kvazi_fgets(arr, num, file_pointer);
+
+    printf("Вот что было в файле: %s", arr);
+
 
     fclose(file_pointer);
 
@@ -30,7 +37,7 @@ int main()
 
     putchar('\n');
 
-    printf("Всего тестовая строка состоит из 9ти цифр и 26ти букв, то есть всего %ld знаков", kvazi_strlen(test_array));
+    printf("Всего тестовая строка состоит из 9ти цифр и 26ти букв, то есть всего %zu знаков", kvazi_strlen(test_array));
 
     putchar('\n');
 
@@ -42,7 +49,13 @@ int main()
     printf("Теперь в массиве, отвечающем за имя файла, следующее(это я его содержимое просто вывел, честное слово): %s\n", kvazi_strcat(file_name, test_array));
 
     printf("Теперь в массиве, отвечающем за имя файла, следующее(это я его содержимое просто вывел, честное слово): %s\n",
-           kvazi_strcat(file_name, test_array, 10));
+           kvazi_strncat(file_name, test_array, 10));
+
+    char* arr2 = kvazi_strdup(file_name, size_of_array);
+    printf("А сейчас я вывел содержимое arr2: %s\n", arr2);
+
+    free(arr);
+    free(arr2);
 
     return 0;
 }
